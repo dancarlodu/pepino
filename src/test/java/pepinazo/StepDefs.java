@@ -6,12 +6,14 @@ import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import junit.framework.Assert;
+import org.junit.rules.ExpectedException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import static junit.framework.Assert.*;
 
@@ -21,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 public class StepDefs {
 
 	public WebDriver driver;
+	public WebDriverWait wait;
+
 
 	@Before
 	public void setUpTest() {
@@ -28,6 +32,8 @@ public class StepDefs {
 		opt.addArguments("--disable-notifications");
 		driver = new ChromeDriver(opt);
 		driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+		wait = new WebDriverWait(driver,15);
+
 	}
 
 	@After
@@ -46,6 +52,8 @@ public class StepDefs {
 			driver.get("https://facebook.com");
 		if(site.equals("Sinatra"))
 			driver.get("https://songs-by-sinatra.herokuapp.com");
+		if(site.equals("IMDB"))
+			driver.get("https://www.imdb.com/");
 	}
 
 	@Then("Login button should exist")
@@ -171,5 +179,39 @@ public class StepDefs {
 		assertNotNull(errorElement);
 		assertTrue(errorElement.isDisplayed());
 		assertTrue(errorElement.getText().equals("The username or password you entered are incorrect"));
+	}
+
+	@And("I log into IMDB with {word} and {word}")
+	public void iLogIntoIMDBWithUserAndPassword(String user, String password) {
+
+		// click en Sign In
+		driver.findElement (By.linkText("Sign In")).click();
+
+		// Click en sign in with IMDB
+		driver.findElement(By.linkText("Sign in with IMDb")).click();
+
+		// Ingresamos usuario y password
+		driver.findElement(By.id("ap_email")).sendKeys("jomarnavarro+1000@gmail.com");
+		driver.findElement(By.id("ap_password")).sendKeys("test@1234");
+
+		// damos click en login
+		driver.findElement(By.id("signInSubmit")).click();
+
+
+	}
+
+	@Then("I should see the IMDB homepage")
+	public void iShouldSeeTheIMDBHomepage() {
+
+		wait.until (ExpectedConditions.visibilityOfElementLocated(By.id("home_img_holder")));
+
+	}
+
+	@And("I should see the name {word} on the top right hand corner")
+	public void iShouldSeeTheNamePeopleOnTheTopRightHandCorner(String name) {
+
+		//WebElement nombre = driver.findElement(By.xpath("//*[contains(@class, 'logged-in') and text() = '"+name+"']"));
+		WebElement nombre = driver.findElement(By.xpath("//label[contains(.,'"+name+"')]"));
+		assertTrue(nombre.getText().equals(name));
 	}
 }
